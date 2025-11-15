@@ -114,28 +114,29 @@ void Parser::parseFuncDef() {
         int paramErrorBefore = errors.size();
         parseParam();
         if (errors.size() > paramErrorBefore) {
-            // If first parameter has error, skip to closing paren
+            // If first parameter has error, skip to closing paren without parsing more parameters
             while (!check(RIGHT_PAREN) && !check(END_OF_FILE) && !check(LEFT_BRACE)) {
-                if (check(INT)) {
-                    // Found next parameter, try to parse it
-                    parseParam();
-                    break;
-                }
-                if (match(COMMA)) {
-                    if (check(INT)) {
-                        parseParam();
-                    }
-                } else {
-                    advance();
-                }
+                advance();
             }
         } else {
             while (match(COMMA)) {
                 if (check(RIGHT_PAREN)) {
                     break;
                 }
+                int paramErrorBefore2 = errors.size();
                 parseParam();
+                // If a parameter after comma has error, stop parsing more parameters
+                if (errors.size() > paramErrorBefore2) {
+                    break;
+                }
             }
+        }
+    } else if (check(COMMA)) {
+        // Handle case where first parameter is missing (comma after opening paren)
+        errorExpected("int");
+        // Skip to closing paren
+        while (!check(RIGHT_PAREN) && !check(END_OF_FILE) && !check(LEFT_BRACE)) {
+            advance();
         }
     }
     

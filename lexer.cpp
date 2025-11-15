@@ -60,13 +60,15 @@ void Lexer::skipComments() {
     char c2 = peek();
     
     if (c1 == '/' && c2 == '/') {
+        // Skip the two slashes
+        next();
+        next();
+        // Skip until newline or end of input
         while (pos < (int)input.length() && getChar() != '\n') {
             next();
         }
-        // Skip the newline if present
-        if (pos < (int)input.length() && getChar() == '\n') {
-            next();
-        }
+        // If we found a newline, skip it (let skipSpace() handle it in next iteration)
+        // If we didn't find a newline, we've reached end of input
     } else if (c1 == '/' && c2 == '*') {
         next();
         next();
@@ -304,6 +306,8 @@ Token Lexer::nextToken() {
         
         if (c == '/' && (peek() == '/' || peek() == '*')) {
             skipComments();
+            // After skipping comments, continue to next iteration to skip spaces again
+            // This handles the case where comment ends with newline
             continue;
         }
         
