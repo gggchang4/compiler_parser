@@ -27,7 +27,7 @@ foreach ($testFile in $testFiles) {
     $total++
     
     # 运行测试
-    $input = Get-Content $testFile.FullName -Raw
+    $input = Get-Content $testFile.FullName -Raw -Encoding UTF8
     $actual = $input | .\parser_v3.exe
     
     # 读取期望输出

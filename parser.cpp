@@ -166,16 +166,54 @@ void Parser::parseStmt() {
     } else if (match(SEMICOLON)) {
         return;
     } else if (check(INT)) {
-        advance();
-        if (!match(IDENTIFIER)) {
-            errorExpected("variable name");
-            return;
-        }
-        if (!match(ASSIGN)) {
-            errorExpected("=");
-            return;
-        }
-        parseExpr();
+        advance(); // Consume 'int' keyword
+        do {
+            // Parse variable name (identifier required)
+            if (!match(IDENTIFIER)) {
+                errorExpected("variable name");
+                // Skip until comma, semicolon, or end of file
+                while (!check(COMMA) && !check(SEMICOLON) && !check(END_OF_FILE)) {
+                    advance();
+                }
+                if (match(COMMA)) {
+                    continue;
+                } else {
+                    break;
+                }
+            }
+            
+            // Optional assignment: parse expr only if '=' exists
+            if (match(ASSIGN)) {
+                // Check if expression is missing
+                if (check(SEMICOLON) || check(COMMA) || check(END_OF_FILE) || 
+                    check(RIGHT_BRACE) || check(RIGHT_PAREN)) {
+                    error("Missing expression after '='");
+                    // Skip until comma, semicolon, or end of file
+                    while (!check(COMMA) && !check(SEMICOLON) && !check(END_OF_FILE)) {
+                        advance();
+                    }
+                    if (match(COMMA)) {
+                        continue;
+                    } else {
+                        break;
+                    }
+                }
+                parseExpr();
+            }
+            
+            if (!check(COMMA)) {
+                break; // No more variables
+            }
+            advance(); // Consume ','
+            
+            // Reject trailing comma
+            if (check(SEMICOLON) || check(END_OF_FILE)) {
+                error("Missing variable name after ','");
+                break;
+            }
+        } while (true);
+        
+        // Require semicolon to end declaration
         if (!match(SEMICOLON)) {
             errorExpected(";");
         }

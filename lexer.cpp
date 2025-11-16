@@ -63,12 +63,13 @@ void Lexer::skipComments() {
         // Skip the two slashes
         next();
         next();
-        // Skip until newline or end of input
+        // Skip until newline (LF) or end of input
+        // Note: CR (0x0D) is not treated as newline here, it will be skipped by skipSpace()
         while (pos < (int)input.length() && getChar() != '\n') {
             next();
         }
-        // If we found a newline, skip it (let skipSpace() handle it in next iteration)
-        // If we didn't find a newline, we've reached end of input
+        // Don't skip the newline here - let skipSpace() handle it in next iteration
+        // This ensures that if comment ends with newline, the next token starts on the next line
     } else if (c1 == '/' && c2 == '*') {
         next();
         next();
